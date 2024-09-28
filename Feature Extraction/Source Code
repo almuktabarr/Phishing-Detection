@@ -1,3 +1,5 @@
+#Kode untuk melakukan Ekstraksi Fitur pada Penelitian ini
+
 def count_suspicious_characters(url):
     parsed_url = urlparse(url)
     url_tanpa_protokol = url.replace(f"{parsed_url.scheme}://", "", 1)
