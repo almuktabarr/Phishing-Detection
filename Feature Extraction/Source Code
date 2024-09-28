@@ -1,0 +1,143 @@
+def count_suspicious_characters(url):
+    parsed_url = urlparse(url)
+    url_tanpa_protokol = url.replace(f"{parsed_url.scheme}://", "", 1)
+    symbols_to_count = '`%#^$&-*:'
+    suspicious_char_count = sum(1 for char in url_tanpa_protokol if char in symbols_to_count)
+    return suspicious_char_count
+
+def ratio_special_characters(url):
+    symbols = count_suspicious_characters(url)
+    alphanumeric = sum(1 for char in url if char.isalnum())
+    return symbols / alphanumeric if alphanumeric > 0 else 0
+
+def count_slashes(url):
+    parsed_url = urlparse(url)
+    url_tanpa_protokol = url.replace(f"{parsed_url.scheme}://", "", 1)
+    return url_tanpa_protokol.count('/')
+
+suspicious_keywords = [
+    'access', 'accounts', 'auth', 'security', 'portal', 'user', 'company', 'admin', 'credential', 'identity',
+    'login', 'password', 'privilege', 'token', 'validation', 'assurance', 'availability', 'confidentiality',
+    'integrity', 'privacy', 'safety', 'trust', 'verification', 'check', 'key', 'lock', 'biometrics',
+    'authorize', 'authentication', 'session', 'profile', 'service', 'support', 'notify',
+    'email', 'account', 'update', 'secure', 'notification', 'transaction', 'validate', 'confirmation',
+    'manager', 'assistant', 'dashboard', 'information', 'communication', 'finance', 'maintenance',
+    'customer', 'invoice', 'billing', 'subscription', 'order', 'shipment',
+    'purchase', 'alert', 'receipt', 'accountinfo', 'payment', 'invoiceinfo', 'orderinfo'
+]
+suspicious_keywords_set = set(suspicious_keywords)
+
+def count_suspicious_keywords(url):
+    parsed_url = urlparse(url)
+    url_tanpa_protokol = url.replace(f"{parsed_url.scheme}://", "", 1).lower()
+    cleaned_url = re.sub(r'[^\w./\-]', '', url_tanpa_protokol)
+    words = re.split(r'[./\-]', cleaned_url)
+    words = [word for word in words if word]
+    suspicious_words = []
+    for word in words:
+        for keyword in suspicious_keywords_set:
+            if keyword in word:
+                suspicious_words.append(keyword)
+                break
+    return len(suspicious_words)
+
+def count_dots(url):
+    return url.count('.')
+
+def count_question_marks(url):
+    return url.count('?')
+
+def count_dashes(url):
+    return url.count('-')
+
+def has_at_symbol(url):
+    return '@' in url
+
+def has_protocol(url):
+    protocol_pattern = r'^(\w+)://'
+    match = re.match(protocol_pattern, url)
+    if match:
+        protocol = match.group(1)
+        if protocol in ['http', 'https']:
+            return protocol
+        else:
+            return 'other'
+    else:
+        return 'none'
+
+def has_redirection(url):
+    parsed_url = urlparse(url)
+    url_tanpa_protokol = url.replace(f"{parsed_url.scheme}://", "", 1).lower()
+    return '//' in url_tanpa_protokol
+
+def has_ip_address(url):
+    ip_pattern = r'\b(?:\d{1,3}\.){1,3}\d{1,3}\b|\[?(?:[A-F0-9]*:){2,7}[A-F0-9]*\]?'
+    match = re.search(ip_pattern, url)
+    return bool(match)
+
+def has_unicode_characters(url):
+    return bool(re.search(r'[^\x00-\x7F]', url))
+
+def has_port_number(url):
+    parsed_url = urlparse(url)
+    url_tanpa_protokol = url.replace(f"{parsed_url.scheme}://", "", 1).lower()
+    return bool(re.search(r':[0-9]\d{0,4}', url_tanpa_protokol))
+
+def entropy(string):
+    p, lns = Counter(string), float(len(string))
+    return -sum(count/lns * math.log2(count/lns) for count in p.values())
+
+def ratio(part, whole):
+    return len(part) / len(whole) if whole else 0
+
+def digit_ratio(string):
+    digits = sum(c.isdigit() for c in string)
+    return digits / len(string) if len(string) > 0 else 0
+
+def avg_token_length(path):
+    tokens = path.split('/')
+    if len(tokens) > 1:
+        return sum(len(token) for token in tokens) / len(tokens)
+    return 0
+
+def continuous_char_ratio(string):
+    max_seq = 1
+    current_seq = 1
+    for i in range(1, len(string)):
+        if string[i] == string[i-1]:
+            current_seq += 1
+            max_seq = max(max_seq, current_seq)
+        else:
+            current_seq = 1
+    return max_seq / len(string) if len(string) > 0 else 0
+
+def domain_token_count(domain):
+    return len(domain.split('.'))
+
+def extract_tld(domain):
+    tokens = domain.split('.')
+    tld = tokens[-1] if len(tokens) > 1 else ''
+    cleaned_tld = re.sub(r'[^a-z]', '', tld.lower())
+    return 1 if cleaned_tld in list_TLD else 0
+
+def domain_length(domain):
+    return len(domain)
+
+def domain_length(url):
+    return len(url)
+
+def file_name_length(path):
+    filename = path.split('/')[-1]
+    return len(filename) if filename else 0
+
+def query_digit_count(query):
+    return sum(c.isdigit() for c in query)
+
+def longest_path_token_length(path):
+    tokens = path.split('/')
+    return max(len(token) for token in tokens) if tokens else 0
+
+def parse_with_default_scheme(url):
+    if "://" not in url:
+        url = "http://" + url
+    return urlparse(url)
