@@ -1,0 +1,17 @@
+#Melakukan unshorten pada URL yang terindikasi sebagai short link
+def add_scheme(url):
+    if "://" not in url:
+        url = "http://" + url
+    return url
+
+def unshorten_url(url, local_cache):
+    try:
+        url_with_scheme = add_scheme(url)
+        response = requests.get(url_with_scheme, allow_redirects=True, timeout=3)
+        final_url = response.url
+    except requests.exceptions.RequestException:
+        final_url = None
+    except Exception:
+        final_url = None
+
+    return final_url
