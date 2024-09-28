@@ -1,0 +1,72 @@
+#inisialisasi Firefly
+def initialize_fireflies(param_space, num_fireflies):
+    print("Initializing fireflies...")
+    fireflies = []
+    for _ in range(num_fireflies):
+        firefly = {}
+        for param, (low, high, step) in param_space.items():
+                firefly[param] = np.random.uniform(low, high)
+        fireflies.append(firefly)
+    print("Fireflies initialized.")
+    return fireflies
+
+#Pergerakan Firefly
+def move_firefly(firefly_i, firefly_j, attractiveness, α, param_space):
+    for param in firefly_i:
+            firefly_i[param] += attractiveness * (firefly_j[param] - firefly_i[param]) + α * (np.random.uniform() - 0.5)
+            firefly_i[param] = np.clip(firefly_i[param], param_space[param][0], param_space[param][1])
+
+            low, high, step = param_space[param]
+            firefly_i[param] = round((firefly_i[param] - low) / step) * step + low
+            firefly_i[param] = np.clip(firefly_i[param], low, high)
+    return firefly_i
+
+def move_and_evaluate_firefly(i, j, fireflies, firefly_fitness, param_space, α, β0, γ, X, y):
+    distance = np.linalg.norm(np.array(list(fireflies[i].values())) - np.array(list(fireflies[j].values())))
+    attractiveness = β0 * np.exp(-γ * distance ** 2)
+    new_firefly = move_firefly(fireflies[i], fireflies[j], attractiveness, α, param_space)
+    new_fitness = fitness(new_firefly, X, y)
+    print(f"Firefly {i+1} moved towards Firefly {j+1}: New fitness = {new_fitness}")
+    return i, new_firefly, new_fitness
+
+#Evaluasi Nilai Fitness
+def evaluate_xgboost(params, X, y):
+    model = xgb.XGBClassifier(
+        learning_rate=params['learning_rate'],
+        min_child_weight=params['min_child_weight'],
+        subsample=params['subsample'],
+        colsample_bytree=params['colsample_bytree'],
+        max_depth=params['max_depth'],
+        gamma=params['gamma'],
+        n_estimators=params['n_estimators'],
+        reg_lambda=params['lambda'],
+        reg_alpha=params['alpha'],
+        random_state=42
+    )
+    cv_score = cross_val_score(model, X, y, cv=5, scoring='accuracy', n_jobs=-1)
+    accuracy = cv_score.mean()
+    return accuracy
+
+def fitness(firefly, X, y):
+    return evaluate_xgboost(firefly, X, y)
+
+#Diversifikasi Firefly
+def diversify_fireflies(fireflies, firefly_fitness, param_space, δ, best_firefly, α, β0, γ, X, y):
+    num_fireflies = len(fireflies)
+    best_index = np.argmax(firefly_fitness)
+    firefly = fireflies[best_index].copy()
+
+    for param, (low, high, step) in param_space.items():
+            # Diversifikasi continuous parameter dengan δ
+            variation = δ * (high - low)
+            firefly[param] = np.clip(np.random.uniform(firefly[param] - variation,
+                                                       firefly[param] + variation), low, high)
+
+    distance = np.linalg.norm(np.array(list(firefly.values())) - np.array(list(best_firefly.values())))
+    attractiveness = β0 * np.exp(-γ * distance ** 2)
+    firefly = move_firefly(firefly, best_firefly, attractiveness, α, param_space)
+    new_fitness = fitness(firefly, X, y)
+    fireflies[best_index] = firefly
+    firefly_fitness[best_index] = new_fitness
+
+    return fireflies, new_fitness
