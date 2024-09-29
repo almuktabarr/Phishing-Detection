@@ -1,3 +1,5 @@
+#List domain yang terindikasi short link
+
 0.gp
 02faq.com
 0a.sk
