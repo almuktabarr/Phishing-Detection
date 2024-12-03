@@ -1,0 +1,10 @@
+streamlit
+xgboost
+joblib
+pandas
+numpy
+requests
+validators
+http.client
+IPython
+scikit-learn
