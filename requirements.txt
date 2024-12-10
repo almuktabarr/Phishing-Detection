@@ -1,10 +1,9 @@
-streamlit
-joblib
-pandas
-numpy
-requests
-validators
-http.client
-IPython
+streamlit==1.40.2
+joblib==1.2.0
+pandas==1.5.3
+numpy==1.23.5
+requests==2.32.3
+validators==0.34.0
+ipython==8.30.0
 xgboost==1.6.1
 scikit-learn==0.24.2
